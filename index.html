@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GestiDoc — Gestion Documentaire Intelligente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+
+/* TOKENS*/
+:root {
+  --night:     #080c14;
+  --deep:      #0d1520;
+  --card:      #080c14;
+  --border:    rgba(255,255,255,.07);
+  --border-2:  rgba(255,255,255,.12);
+  --muted:     #4b5a70;
+  --soft:      #8396ae;
+  --text:      #c8d6e5;
+  --white:     #f0f4f8;
+  --blue:      #3b82f6;
+  --blue-glow: rgba(59,130,246,.25);
+  --cyan:      #06b6d4;
+  --gold:      #f59e0b;
+  --green:     #10b981;
+
+  --serif:  'Cormorant Garamond', Georgia, serif;
+  --sans:   'DM Sans', sans-serif;
+  --mono:   'DM Mono', monospace;
+}
+
+/*RESET & BASE*/
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--night);
+  color: var(--text);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+::selection { background: var(--blue); color: white; }
+
+/* BRUIT DE FOND */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: .5;
+}
+
+/*NAVBAR */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 20px 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid transparent;
+  transition: all .4s ease;
+}
+
+nav.scrolled {
+  background: rgba(8,12,20,.9);
+  backdrop-filter: blur(16px);
+  border-bottom-color: var(--border);
+  padding: 14px 60px;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.nav-logo-icon {
+  width: 34px; height: 34px;
+  background: var(--blue);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 15px;
+}
+
+.nav-logo-name {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: -.3px;
+}
+
+.nav-logo-name span { color: var(--blue); }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  list-style: none;
+}
+
+.nav-links a {
+  color: var(--soft);
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 400;
+  letter-spacing: .3px;
+  transition: color .2s;
+}
+
+.nav-links a:hover { color: var(--white); }
+
+.nav-cta {
+  padding: 9px 22px;
+  background: var(--blue);
+  color: white !important;
+  border-radius: 7px;
+  font-weight: 500 !important;
+  font-size: 13.5px !important;
+  transition: all .2s !important;
+  box-shadow: 0 4px 16px var(--blue-glow);
+}
+
+.nav-cta:hover {
+  background: #2563eb !important;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px var(--blue-glow) !important;
+}
+
+/* HERO*/
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 120px 60px 80px;
+}
+
+/* Grille décorative */
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(59,130,246,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59,130,246,.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+}
+
+/* Orbes */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+}
+.orb-1 {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(59,130,246,.12), transparent 70%);
+  top: -150px; right: -100px;
+  animation: drift 12s ease-in-out infinite;
+}
+.orb-2 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(6,182,212,.08), transparent 70%);
+  bottom: 0; left: -100px;
+  animation: drift 16s ease-in-out infinite reverse;
+}
+
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(30px, -20px) scale(1.05); }
+  66%       { transform: translate(-20px, 15px) scale(.97); }
+}
+
+.hero-content {
+  position: relative;
+  text-align: center;
+  max-width: 820px;
+  z-index: 1;
+}
+
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border: 1px solid var(--border-2);
+  border-radius: 30px;
+  font-size: 12px;
+  color: var(--soft);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+  background: rgba(255,255,255,.03);
+  animation: fadeUp .8s ease both;
+}
+
+.hero-tag span {
+  width: 6px; height: 6px;
+  background: var(--blue);
+  border-radius: 50%;
+  animation: pulse-dot 2s ease infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: .4; transform: scale(.7); }
+}
+
+.hero-title {
+  font-family: var(--serif);
+  font-size: clamp(52px, 8vw, 96px);
+  font-weight: 300;
+  line-height: 1.05;
+  color: var(--white);
+  letter-spacing: -2px;
+  margin-bottom: 24px;
+  animation: fadeUp .8s .15s ease both;
+}
+
+.hero-title em {
+  font-style: italic;
+  color: var(--blue);
+}
+
+.hero-title .line-2 {
+  display: block;
+  color: var(--soft);
+  font-weight: 300;
+}
+
+.hero-desc {
+  font-size: 17px;
+  color: var(--soft);
+  max-width: 520px;
+  margin: 0 auto 40px;
+  line-height: 1.8;
+  font-weight: 300;
+  animation: fadeUp .8s .3s ease both;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  animation: fadeUp .8s .45s ease both;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 14px 28px;
+  background: var(--blue);
+  color: white;
+  border-radius: 9px;
+  text-decoration: none;
+  font-size: 14.5px;
+  font-weight: 500;
+  box-shadow: 0 6px 24px var(--blue-glow);
+  transition: all .25s;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px var(--blue-glow);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 14px 28px;
+  border: 1px solid var(--border-2);
+  color: var(--text);
+  border-radius: 9px;
+  text-decoration: none;
+  font-size: 14.5px;
+  font-weight: 400;
+  transition: all .25s;
+  background: rgba(255,255,255,.03);
+}
+
+.btn-ghost:hover {
+  border-color: var(--blue);
+  color: var(--white);
+  background: rgba(59,130,246,.06);
+}
+
+/* Stats héro */
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  margin-top: 72px;
+  padding-top: 40px;
+  border-top: 1px solid var(--border);
+  animation: fadeUp .8s .6s ease both;
+}
+
+.hero-stat-num {
+  font-family: var(--serif);
+  font-size: 36px;
+  font-weight: 300;
+  color: var(--white);
+  letter-spacing: -1px;
+}
+
+.hero-stat-label {
+  font-size: 11.5px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+/*SECTIONS COMMUNES*/
+section {
+  padding: 100px 60px;
+  position: relative;
+}
+
+.section-tag {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--blue);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.section-title {
+  font-family: var(--serif);
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 300;
+  color: var(--white);
+  line-height: 1.1;
+  letter-spacing: -1px;
+  margin-bottom: 16px;
+}
+
+.section-title em { font-style: italic; color: var(--blue); }
+
+.section-desc {
+  font-size: 16px;
+  color: var(--soft);
+  max-width: 500px;
+  line-height: 1.8;
+  font-weight: 300;
+  margin-bottom: 56px;
+}
+
+.container { max-width: 1160px; margin: 0 auto; }
+
+/* SECTION — MÉCANISME OCR*/
+.ocr-section {
+  background: var(--deep);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.ocr-header { text-align: center; margin-bottom: 64px; }
+.ocr-header .section-desc { margin: 0 auto; }
+
+.ocr-steps {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0;
+  position: relative;
+}
+
+/* Ligne de connexion */
+.ocr-steps::before {
+  content: '';
+  position: absolute;
+  top: 36px;
+  left: calc(10% + 18px);
+  right: calc(10% + 18px);
+  height: 1px;
+  background: linear-gradient(90deg, var(--blue), var(--cyan), var(--green));
+  opacity: .3;
+  z-index: 0;
+}
+
+.ocr-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 12px;
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all .6s ease;
+}
+
+.ocr-step.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ocr-step-num {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 1px solid var(--border-2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  color: var(--blue);
+  margin-bottom: 20px;
+  transition: all .3s;
+  position: relative;
+}
+
+.ocr-step-num::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid var(--blue);
+  opacity: 0;
+  transition: .3s;
+  transform: scale(1.1);
+}
+
+.ocr-step:hover .ocr-step-num {
+  background: rgba(59,130,246,.15);
+  border-color: var(--blue);
+}
+
+.ocr-step:hover .ocr-step-num::after { opacity: .4; }
+
+.ocr-step h4 {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 8px;
+}
+
+.ocr-step p {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.ocr-step-badge {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 2px 8px;
+  background: rgba(59,130,246,.1);
+  border: 1px solid rgba(59,130,246,.2);
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--blue);
+  letter-spacing: .5px;
+}
+
+/*SECTION — RÔLES*/
+.roles-section { background: var(--night); }
+
+.roles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.role-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 32px 28px;
+  transition: all .3s;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity .6s ease, transform .6s ease, box-shadow .3s, border-color .3s;
+}
+
+.role-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.role-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--card-accent, var(--blue));
+  opacity: 0;
+  transition: opacity .3s;
+}
+
+.role-card:hover { border-color: var(--border-2); box-shadow: 0 8px 32px rgba(0,0,0,.3); }
+.role-card:hover::before { opacity: 1; }
+
+.role-card.admin   { --card-accent: var(--blue); }
+.role-card.agent   { --card-accent: var(--cyan); }
+.role-card.user-r  { --card-accent: var(--green); }
+
+.role-icon {
+  width: 52px; height: 52px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+.admin .role-icon  { background: rgba(59,130,246,.12); color: var(--blue); }
+.agent .role-icon  { background: rgba(6,182,212,.12);  color: var(--cyan); }
+.user-r .role-icon { background: rgba(16,185,129,.12); color: var(--green); }
+
+.role-title {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+
+.role-subtitle {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 18px;
+  font-family: var(--mono);
+}
+
+.role-divider {
+  height: 1px;
+  background: var(--border);
+  margin-bottom: 18px;
+}
+
+.role-perms {
+  list-style: none;
+  margin-bottom: 18px;
+}
+
+.role-perms li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13.5px;
+  color: var(--soft);
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,.03);
+}
+
+.role-perms li:last-child { border-bottom: none; }
+
+.perm-icon {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.perm-yes { background: rgba(16,185,129,.15); color: var(--green); }
+.perm-no  { background: rgba(220,38,38,.1);   color: #f87171; }
+
+.role-restrictions {
+  list-style: none;
+}
+
+.role-restrictions li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: #f87171;
+  padding: 3px 0;
+}
+
+.role-restrictions li i { font-size: 10px; }
+
+/*SECTION — POUR QUI*/
+.audience-section {
+  background: var(--deep);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.audience-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.audience-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px 28px 32px;
+  display: flex;
+  gap: 20px;
+  transition: all .3s;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .6s ease, transform .6s ease, border-color .3s;
+}
+
+.audience-card.visible { opacity: 1; transform: translateY(0); }
+.audience-card:hover { border-color: var(--border-2); }
+
+.audience-icon {
+  width: 48px; height: 48px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  background: rgba(59,130,246,.1);
+  color: var(--blue);
+}
+
+.audience-card:nth-child(2) .audience-icon { background: rgba(6,182,212,.1); color: var(--cyan); }
+.audience-card:nth-child(3) .audience-icon { background: rgba(245,158,11,.1); color: var(--gold); }
+.audience-card:nth-child(4) .audience-icon { background: rgba(16,185,129,.1); color: var(--green); }
+
+.audience-title {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+
+.audience-desc {
+  font-size: 13.5px;
+  color: var(--soft);
+  line-height: 1.75;
+  margin-bottom: 14px;
+}
+
+.audience-benefits {
+  list-style: none;
+}
+
+.audience-benefits li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  padding: 3px 0;
+}
+
+.audience-benefits li i {
+  color: var(--blue);
+  font-size: 10px;
+}
+
+/*SECTION — FONCTIONNALITÉS*/
+.features-section { background: var(--night); }
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.feature-item {
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255,255,255,.02);
+  transition: all .3s;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity .5s ease, transform .5s ease, background .3s, border-color .3s;
+}
+
+.feature-item.visible { opacity: 1; transform: translateY(0); }
+.feature-item:hover {
+  background: var(--card);
+  border-color: var(--border-2);
+}
+
+.feature-item i {
+  font-size: 22px;
+  color: var(--blue);
+  margin-bottom: 14px;
+  display: block;
+}
+
+.feature-item h4 {
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 8px;
+}
+
+.feature-item p {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+/* CTA FINAL */
+.cta-section {
+  background: var(--deep);
+  border-top: 1px solid var(--border);
+  text-align: center;
+  padding: 100px 60px;
+}
+
+.cta-section .section-title { margin-bottom: 14px; }
+.cta-section .section-desc  { margin: 0 auto 40px; text-align: center; }
+
+.cta-box {
+  max-width: 660px;
+  margin: 0 auto;
+  padding: 48px;
+  background: var(--card);
+  border: 1px solid var(--border-2);
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-box::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59,130,246,.08), transparent);
+  pointer-events: none;
+}
+
+.cta-box h3 {
+  font-family: var(--serif);
+  font-size: 32px;
+  font-weight: 300;
+  color: var(--white);
+  margin-bottom: 10px;
+}
+
+.cta-box p {
+  font-size: 15px;
+  color: var(--soft);
+  margin-bottom: 28px;
+}
+
+.cta-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+/*FOOTER*/
+footer {
+  background: var(--night);
+  border-top: 1px solid var(--border);
+  padding: 32px 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+footer .nav-logo-name { font-size: 16px; }
+footer p { font-size: 12.5px; color: var(--muted); }
+
+/*ANIMATIONS*/
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/*RESPONSIVE */
+@media (max-width: 900px) {
+  nav, section, .cta-section, footer { padding-left: 24px; padding-right: 24px; }
+  .ocr-steps { grid-template-columns: 1fr; }
+  .ocr-steps::before { display: none; }
+  .roles-grid, .features-grid { grid-template-columns: 1fr; }
+  .audience-grid { grid-template-columns: 1fr; }
+  .hero-stats { gap: 24px; flex-wrap: wrap; }
+  .nav-links { display: none; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-icon"><i class="fa-solid fa-file-shield"></i></div>
+    <div class="nav-logo-name">Gesti<span>Doc</span></div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#ocr">Mécanisme OCR</a></li>
+    <li><a href="#roles">Rôles</a></li>
+    <li><a href="#audience">Pour qui</a></li>
+    <li><a href="#features">Fonctionnalités</a></li>
+    <li><a href="auth/login.php" class="nav-cta">Se connecter</a></li>
+  </ul>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="hero-content">
+    <div class="hero-tag">
+      <span></span>
+      Gestion documentaire intelligente
+    </div>
+
+    <h1 class="hero-title">
+      Gérez vos documents
+      <em>administratifs</em>
+      <span class="line-2">avec précision</span>
+    </h1>
+
+    <p class="hero-desc">
+      GestiDoc centralise, analyse et classe automatiquement vos documents
+      grâce à la reconnaissance optique de caractères — OCR.
+      Simple pour les utilisateurs, puissant pour les équipes.
+    </p>
+
+    <div class="hero-actions">
+      <a href="auth/register.php" class="btn-primary">
+        <i class="fa-solid fa-arrow-right"></i>
+        Commencer maintenant
+      </a>
+      <a href="#ocr" class="btn-ghost">
+        <i class="fa-solid fa-play"></i>
+        Voir comment ça marche
+      </a>
+    </div>
+
+    <div class="hero-stats">
+      <div>
+        <div class="hero-stat-num">3</div>
+        <div class="hero-stat-label">Niveaux d'accès</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">OCR</div>
+        <div class="hero-stat-label">Traitement auto</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">100%</div>
+        <div class="hero-stat-label">Traçabilité</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">∞</div>
+        <div class="hero-stat-label">Documents</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ MÉCANISME OCR ══ -->
+<section class="ocr-section" id="ocr">
+  <div class="container">
+    <div class="ocr-header">
+      <div class="section-tag">// mécanisme</div>
+      <h2 class="section-title">Comment fonctionne <em>l'OCR</em> ?</h2>
+      <p class="section-desc">
+        De l'upload à la validation, chaque document suit un parcours
+        structuré et automatisé en 5 étapes claires.
+      </p>
+    </div>
+
+    <div class="ocr-steps">
+
+      <div class="ocr-step">
+        <div class="ocr-step-num"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+        <h4>Upload</h4>
+        <p>L'utilisateur dépose son document (PDF, JPG, PNG) depuis son espace personnel.</p>
+        <span class="ocr-step-badge">ÉTAPE 01</span>
+      </div>
+
+      <div class="ocr-step">
+        <div class="ocr-step-num"><i class="fa-solid fa-scanner"></i></div>
+        <h4>Scan OCR</h4>
+        <p>Le moteur OCR analyse l'image et extrait automatiquement le texte contenu.</p>
+        <span class="ocr-step-badge">ÉTAPE 02</span>
+      </div>
+
+      <div class="ocr-step">
+        <div class="ocr-step-num"><i class="fa-solid fa-brain"></i></div>
+        <h4>Analyse IA</h4>
+        <p>Le contenu extrait est analysé pour détecter le service et la catégorie du document.</p>
+        <span class="ocr-step-badge">ÉTAPE 03</span>
+      </div>
+
+      <div class="ocr-step">
+        <div class="ocr-step-num"><i class="fa-solid fa-user-check"></i></div>
+        <h4>Vérification</h4>
+        <p>Un agent humain examine le document et peut corriger la classification si besoin.</p>
+        <span class="ocr-step-badge">ÉTAPE 04</span>
+      </div>
+
+      <div class="ocr-step">
+        <div class="ocr-step-num"><i class="fa-solid fa-circle-check"></i></div>
+        <h4>Décision</h4>
+        <p>Le document est validé et archivé, ou rejeté avec une raison notifiée à l'utilisateur.</p>
+        <span class="ocr-step-badge">ÉTAPE 05</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ RÔLES ══ -->
+<section class="roles-section" id="roles">
+  <div class="container">
+    <div class="section-tag">// accès & permissions</div>
+    <h2 class="section-title">Qui fait <em>quoi</em> ?</h2>
+    <p class="section-desc">
+      GestiDoc définit trois profils distincts avec des droits
+      précis pour garantir sécurité et fluidité.
+    </p>
+
+    <div class="roles-grid">
+
+      <!-- Admin -->
+      <div class="role-card admin">
+        <div class="role-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="role-title">Administrateur</div>
+        <div class="role-subtitle">Contrôle total</div>
+        <div class="role-divider"></div>
+        <ul class="role-perms">
+          <li>
+            <span class="perm-icon perm-yes"><i class="fa-solid fa-check"></i></span>
+            Gérer tous les utilisateurs
+          </li>
+          <li>
+            <span class="perm-icon perm-yes"><i class="fa-solid fa-check"></i></span>
+            Créer & désactiver des comptes agents
+          </li>
+          <li>
+            <span class="perm-icon perm-yes"><i class="fa-solid fa-check"></i></span>
+            Consulter les journaux d'audit
+          </li>
+          <li>
+            <span class="perm-icon perm-yes"><i class="fa-solid fa-check"></i></span>
+            Voir toute l'activité du système
+          </li>
+          <li>
+            <span class="perm-icon perm-yes"><i class="fa-solid fa-check"></i></span>
+            Réinitialiser les mots de passe
+          </li>
+          <li>
+            <span class="perm-icon perm-yes"><i class="fa-solid fa-check"></i></span>
+            Accéder aux statistiques globales
+          </li>
+        </ul>
+      </div>
+
+      <!-- Agent -->
+      <div class="role-card agent">
+        <div class="role-icon"><i class="fa-solid fa-user-tie"></i></div>
+        <div class="role-title">Agent</div>
+        <div class="role-subtitle">Traitement documentaire</div>
+        <div class="role-divider"></div>
+        <ul class="role-perms">
+          <li>
+            <span class="perm-icon perm-yes"><i class="fa-solid fa-check"></i></span>
+            Consulter les documents en attente
+          </li>
+          <li>
+            <span class="perm-icon perm-yes"><i class="fa-solid fa-check"></i></span>
+            Valider ou rejeter un document
+          </li>
+          <li>
+            <span class="perm-icon perm-yes"><i class="fa-solid fa-check"></i></span>
+            Corriger la classification OCR
+          </li>
+          <li>
+            <span class="perm-icon perm-yes"><i class="fa-solid fa-check"></i></span>
+            Ajouter une raison de rejet
+          </li>
+          <li>
+            <span class="perm-icon perm-no"><i class="fa-solid fa-xmark"></i></span>
+            Gérer les utilisateurs
+          </li>
+          <li>
+            <span class="perm-icon perm-no"><i class="fa-solid fa-xmark"></i></span>
+            Accéder aux journaux d'audit
+          </li>
+        </ul>
+      </div>
+
+      <!-- Utilisateur -->
+      <div class="role-card user-r">
+        <div class="role-icon"><i class="fa-solid fa-user"></i></div>
+        <div class="role-title">Utilisateur</div>
+        <div class="role-subtitle">Soumission de documents</div>
+        <div class="role-divider"></div>
+        <ul class="role-perms">
+          <li>
+            <span class="perm-icon perm-yes"><i class="fa-solid fa-check"></i></span>
+            Uploader ses documents
+          </li>
+          <li>
+            <span class="perm-icon perm-yes"><i class="fa-solid fa-check"></i></span>
+            Recevoir des notifications de statut
+          </li>
+          <li>
+            <span class="perm-icon perm-yes"><i class="fa-solid fa-check"></i></span>
+            Gérer son profil personnel
+          </li>
+          <li>
+            <span class="perm-icon perm-no"><i class="fa-solid fa-xmark"></i></span>
+            Voir les documents des autres
+          </li>
+          <li>
+            <span class="perm-icon perm-no"><i class="fa-solid fa-xmark"></i></span>
+            Valider ou rejeter
+          </li>
+          <li>
+            <span class="perm-icon perm-no"><i class="fa-solid fa-xmark"></i></span>
+            Accéder au panneau admin
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ POUR QUI ══ -->
+<section class="audience-section" id="audience">
+  <div class="container">
+    <div class="section-tag">// utilisateurs cibles</div>
+    <h2 class="section-title">À qui s'adresse <em>GestiDoc</em> ?</h2>
+    <p class="section-desc">
+      Conçu pour toute organisation qui manipule des volumes
+      importants de documents administratifs.
+    </p>
+
+    <div class="audience-grid">
+
+      <div class="audience-card">
+        <div class="audience-icon"><i class="fa-solid fa-landmark"></i></div>
+        <div>
+          <div class="audience-title">Administrations publiques</div>
+          <p class="audience-desc">Mairies, préfectures, ministères — gérez les demandes administratives citoyennes sans paperasse.</p>
+          <ul class="audience-benefits">
+            <li><i class="fa-solid fa-chevron-right"></i> Traitement rapide des dossiers citoyens</li>
+            <li><i class="fa-solid fa-chevron-right"></i> Archivage numérique sécurisé</li>
+            <li><i class="fa-solid fa-chevron-right"></i> Traçabilité totale des décisions</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="audience-card">
+        <div class="audience-icon"><i class="fa-solid fa-building"></i></div>
+        <div>
+          <div class="audience-title">Entreprises & PME</div>
+          <p class="audience-desc">Factures, contrats, devis — centralisez et classifiez automatiquement tous vos documents métier.</p>
+          <ul class="audience-benefits">
+            <li><i class="fa-solid fa-chevron-right"></i> Zéro classement manuel</li>
+            <li><i class="fa-solid fa-chevron-right"></i> Workflows de validation internes</li>
+            <li><i class="fa-solid fa-chevron-right"></i> Accès multi-équipes sécurisé</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="audience-card">
+        <div class="audience-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+        <div>
+          <div class="audience-title">Établissements scolaires</div>
+          <p class="audience-desc">Diplômes, relevés de notes, dossiers d'inscription — simplifiez la gestion documentaire académique.</p>
+          <ul class="audience-benefits">
+            <li><i class="fa-solid fa-chevron-right"></i> Traitement des dossiers étudiants</li>
+            <li><i class="fa-solid fa-chevron-right"></i> Vérification automatique des pièces</li>
+            <li><i class="fa-solid fa-chevron-right"></i> Notifications en temps réel</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="audience-card">
+        <div class="audience-icon"><i class="fa-solid fa-hospital"></i></div>
+        <div>
+          <div class="audience-title">Structures médicales</div>
+          <p class="audience-desc">Ordonnances, comptes-rendus, dossiers patients — gérez vos documents sensibles avec sécurité.</p>
+          <ul class="audience-benefits">
+            <li><i class="fa-solid fa-chevron-right"></i> Confidentialité garantie</li>
+            <li><i class="fa-solid fa-chevron-right"></i> Classement par catégorie médicale</li>
+            <li><i class="fa-solid fa-chevron-right"></i> Journal d'audit complet</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ FONCTIONNALITÉS ══ -->
+<section class="features-section" id="features">
+  <div class="container">
+    <div class="section-tag">// ce que vous obtenez</div>
+    <h2 class="section-title">Tout ce dont vous <em>avez besoin</em></h2>
+    <p class="section-desc">
+      Un écosystème complet pensé pour la simplicité d'usage
+      et la robustesse opérationnelle.
+    </p>
+
+    <div class="features-grid">
+
+      <div class="feature-item">
+        <i class="fa-solid fa-scanner"></i>
+        <h4>OCR automatique</h4>
+        <p>Extraction du texte, détection du service et de la catégorie du document sans intervention humaine.</p>
+      </div>
+
+      <div class="feature-item">
+        <i class="fa-solid fa-bell"></i>
+        <h4>Notifications temps réel</h4>
+        <p>Chaque acteur est notifié en temps réel à chaque étape clé — upload, validation, rejet.</p>
+      </div>
+
+      <div class="feature-item">
+        <i class="fa-solid fa-scroll"></i>
+        <h4>Journal d'audit</h4>
+        <p>Chaque action est enregistrée : qui a fait quoi, quand et sur quel document.</p>
+      </div>
+
+      <div class="feature-item">
+        <i class="fa-solid fa-shield-halved"></i>
+        <h4>Sécurité multicouche</h4>
+        <p>Sessions PHP sécurisées, mots de passe hashés, contrôle d'accès par rôle.</p>
+      </div>
+
+      <div class="feature-item">
+        <i class="fa-solid fa-chart-line"></i>
+        <h4>Tableau de bord</h4>
+        <p>Statistiques en temps réel sur les documents traités, validés et rejetés.</p>
+      </div>
+
+      <div class="feature-item">
+        <i class="fa-solid fa-folder-tree"></i>
+        <h4>Classification intelligente</h4>
+        <p>Chaque document est affecté à un service et une catégorie avec possibilité de correction manuelle.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA ══ -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-box">
+      <h3>Prêt à commencer ?</h3>
+      <p>Rejoignez GestiDoc et transformez votre gestion documentaire dès aujourd'hui.</p>
+      <div class="cta-btns">
+        <a href="auth/register.php" class="btn-primary">
+          <i class="fa-solid fa-user-plus"></i>
+          Créer un compte
+        </a>
+        <a href="auth/login.php" class="btn-ghost">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          Se connecter
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="nav-logo">
+    <div class="nav-logo-icon"><i class="fa-solid fa-file-shield"></i></div>
+    <div class="nav-logo-name">Gesti<span>Doc</span></div>
+  </div>
+  <p>© 2026 GestiDoc — Gestion documentaire administrative intelligente</p>
+</footer>
+
+<script>
+/* ── Navbar scroll ── */
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 40);
+});
+
+/* ── Intersection Observer (animations au scroll) ── */
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => {
+        entry.target.classList.add('visible');
+      }, entry.target.dataset.delay || 0);
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.15 });
+
+/* OCR steps avec délai échelonné */
+document.querySelectorAll('.ocr-step').forEach((el, i) => {
+  el.dataset.delay = i * 120;
+  observer.observe(el);
+});
+
+/* Cards avec délai */
+document.querySelectorAll('.role-card, .audience-card, .feature-item').forEach((el, i) => {
+  el.dataset.delay = (i % 3) * 100;
+  observer.observe(el);
+});
+
+/* ── Smooth scroll ── */
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+</script>
+
+</body>
+</html>

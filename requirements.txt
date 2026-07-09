@@ -1,0 +1,8 @@
+fitz==0.0.1.dev2
+numpy==2.5.1
+opencv_python==4.13.0.92
+opencv_python==5.0.0.93
+pdf2image==1.17.0
+Pillow==12.3.0
+pymysql==1.2.0
+pytesseract==0.3.13
