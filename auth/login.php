@@ -40,7 +40,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 // 🔐 Forcer changement mot de passe
                 if ($user['must_change_password'] == 1) {
                     $_SESSION['force_password_change'] = true;
-                    header("Location: /projetDUT/public/change-password.php");
+                    $baseUrl = '/' . basename(dirname(__DIR__));
+                    header("Location: {$baseUrl}/public/change-password.php");
                     exit;
                 }
 

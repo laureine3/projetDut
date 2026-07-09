@@ -124,10 +124,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="upload.css">
+    <link rel="stylesheet" href="upload.css">
     <title>Upload Document - GestiDoc</title>
     <style>
-   
+        
     </style>
    
 </head>
@@ -138,16 +138,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <div class="container">
 
             <div class="top-bar">
-                <div><strong>Bonjour <?= htmlspecialchars($_SESSION["name"]); ?></strong></div>
+                <div>👋<strong>Bonjour <?= htmlspecialchars($_SESSION["name"]); ?></strong></div>
                 <a href="../../auth/logout.php" class="logout">Déconnexion</a>
             </div>
 
-            <h2>Uploader un document</h2>
+            <div class="title-box">
 
-            <p class="subtitle">
-    Déposez votre document ou cliquez dans la zone ci-dessous pour le sélectionner.
-    Formats acceptés : JPG, JPEG, PNG et PDF.
-</p>
+    <div class="title-icon">📂</div>
+
+    <h2>Uploader un document</h2>
+
+    <p class="subtitle">
+        Déposez votre document administratif pour lancer
+        automatiquement l'analyse OCR.
+    </p>
+
+</div>
 
             <?php if ($message): ?>
                 <div class="message"><?= htmlspecialchars($message) ?></div>
@@ -155,9 +161,35 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             <form id="uploadForm" method="POST" enctype="multipart/form-data">
                 <p id="upload-status"></p>
-                <input type="file" name="document" id="documentInput" required>
-                <div id="preview"></div>
-                <button type="submit">Uploader</button>
+                <label class="drop-zone">
+
+    <input
+        type="file"
+        name="document"
+        id="documentInput"
+        required
+    >
+
+    <div class="drop-content">
+
+        <div class="upload-icon">📄</div>
+
+        <h3>Glissez votre document ici</h3>
+
+        <p>ou cliquez pour sélectionner un fichier</p>
+
+        <span>PDF • JPG • PNG</span>
+
+    </div>
+
+</label>
+               <button class="upload-btn" type="submit">
+                  ⬆ Uploader le document
+              </button>
+              <div class="info-box">
+
+   
+</div>
             </form>
 
         </div>
@@ -180,18 +212,79 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <script>
         document.getElementById("documentInput").addEventListener("change", function() {
-            const preview = document.getElementById("preview");
-            preview.innerHTML = "";
-            const file = this.files[0];
-            if (!file) return;
-            if (file.type.startsWith("image/")) {
-                const img = document.createElement("img");
-                img.src = URL.createObjectURL(file);
-                preview.appendChild(img);
-            } else if (file.type === "application/pdf") {
-                preview.innerHTML = "<p>📄 PDF sélectionné : <strong>" + file.name + "</strong></p>";
-            }
-        });
+
+    const preview = document.getElementById("preview");
+
+    preview.innerHTML = "";
+
+    const file = this.files[0];
+
+    if (!file) return;
+
+
+    let content = "";
+
+
+    if (file.type.startsWith("image/")) {
+
+        content = `
+            <div class="file-card">
+
+                <div class="file-left">
+
+                    <img src="${URL.createObjectURL(file)}">
+
+                    <div>
+                        <h4>${file.name}</h4>
+
+                        <p>
+                            ${(file.size / 1024).toFixed(1)} Ko
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+        `;
+
+    } 
+    
+    else if (file.type === "application/pdf") {
+
+
+        content = `
+
+            <div class="file-card">
+
+                <div class="file-left">
+
+                    <div class="pdf-icon">
+                        📄
+                    </div>
+
+
+                    <div>
+
+                        <h4>${file.name}</h4>
+
+                        <p>
+                            ${(file.size / 1024).toFixed(1)} Ko
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+        `;
+
+    }
+    preview.innerHTML = content;
+
+});
 
         document.getElementById("uploadForm").addEventListener("submit", function() {
 

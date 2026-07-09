@@ -6,6 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once __DIR__ . '/database.php';
 
+define('BASE_URL','/' . basename(dirname(__DIR__)));
 /*
 |--------------------------------------------------------------------------
 | Vérifier si connecté
@@ -14,7 +15,7 @@ require_once __DIR__ . '/database.php';
 function requireLogin()
 {
     if (!isset($_SESSION['user_id'])) {
-        header("Location: /projetDUT/auth/login.php");
+        header("Location:" .BASE_URL. "/auth/login.php");
         exit;
     }
 }
@@ -29,7 +30,7 @@ function requireRole($role)
     requireLogin();
 
     if (!isset($_SESSION['role']) || $_SESSION['role'] !== $role) {
-        header("Location: /projetDUT/auth/login.php");
+        header("Location:" .BASE_URL. "/auth/login.php");
         exit;
     }
 }
@@ -44,7 +45,7 @@ function requireAnyRole(array $roles)
     requireLogin();
 
     if (!in_array($_SESSION['role'], $roles)) {
-        header("Location: /projetDUT/auth/login.php");
+        header("Location:" .BASE_URL. "/auth/login.php");
         exit;
     }
 }
@@ -87,7 +88,7 @@ function checkIfActive()
 
         session_destroy();
 
-        header("Location: /projetDUT/auth/login.php?error=compte_desactive");
+        header("Location:" .BASE_URL. "/auth/login.php?error=compte_desactive");
         exit;
     }
 }
@@ -104,7 +105,7 @@ function enforcePasswordChange()
         $_SESSION['force_password_change'] === true
     ) {
         if (basename($_SERVER['PHP_SELF']) !== 'change-password.php') {
-            header("Location: /projetDUT/public/change-password.php");
+            header("Location:" .BASE_URL. "/public/change-password.php");
             exit;
         }
     }
@@ -124,19 +125,19 @@ function redirectByRole()
     switch ($_SESSION['role']) {
 
         case 'admin':
-            header("Location: /projetDUT/public/admin/dashboard.php");
+            header("Location:" .BASE_URL. "/public/admin/dashboard.php");
             break;
 
         case 'agent':
-            header("Location: /projetDUT/public/agent/dashboard.php");
+            header("Location:" .BASE_URL. "/public/agent/dashboard.php");
             break;
 
         case 'user':
-            header("Location: /projetDUT/public/user/upload_document.php");
+            header("Location:" .BASE_URL. "/public/user/upload_document.php");
             break;
 
         default:
-            header("Location: /projetDUT/auth/login.php");
+            header("Location:" .BASE_URL. "/auth/login.php");
     }
 
     exit;

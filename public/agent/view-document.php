@@ -186,7 +186,12 @@ header {
   border-radius: 12px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.05);
   margin-bottom: 20px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
+
 
 header h1 {
   font-size: 22px;
@@ -263,6 +268,31 @@ textarea {
   border: 1px solid #ddd;
   resize: none;
 }
+
+
+/* Bouton "Retour" (style identique à l’admin dashboard) */
+.btn {
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    background: var(--blue, #2563eb);
+    color: #ffffff;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(37,99,235,.25);
+    transition: .2s;
+    margin-left: auto; /* pousse à droite */
+}
+
+.btn:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+
 
 /* BUTTONS */
 button {
@@ -345,13 +375,18 @@ p[style*="color:red"] {
 
 <body>
 
-<nav>
-<?php include_once("nav.php"); ?>
-</nav>
+
 
 <header>
 <h1>Consultation du document</h1>
+
+<a href="documents.php" class="btn">
+        <i class="fas fa-arrow-left"></i>
+        Retour
+    </a>
 </header>
+
+ 
 
 <h3><?= htmlspecialchars($file_name) ?></h3>
 
