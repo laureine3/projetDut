@@ -721,7 +721,7 @@ $totalActifs  = count(array_filter($users, fn($u) => $u['is_active']));
             <div class="header-badges">
                 <span class="hbadge hbadge-blue">
                     <i class="fa-solid fa-users" style="font-size:10px;"></i>
-                    <?= $totalUsers ?> utilisateurs
+                    <?= $totalUsers ?> Uploadeurs
                 </span>
                 <span class="hbadge hbadge-amber">
                     <i class="fa-solid fa-shield-halved" style="font-size:10px;"></i>
